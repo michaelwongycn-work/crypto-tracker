@@ -9,6 +9,29 @@ import (
 	_ "modernc.org/sqlite"
 )
 
+func tableExists(db *sql.DB, tableName string) (bool, error) {
+	var count int
+	err := db.QueryRow("SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name=?", tableName).Scan(&count)
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
+
+func createTableIfNotExists(db *sql.DB, tableName string, schema string) error {
+	exists, err := tableExists(db, tableName)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		_, err := db.Exec(schema)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func Connect(timeout time.Duration, dbname string) (*sql.DB, error) {
 	db, err := sql.Open("sqlite", "./"+dbname+".db")
 	if err != nil {
@@ -23,6 +46,26 @@ func Connect(timeout time.Duration, dbname string) (*sql.DB, error) {
 		log.Printf("Errors %s pinging DB\n", err)
 		return nil, err
 	}
+
 	log.Printf("Connected to DB %s successfully\n", dbname)
+
+	tables := []struct {
+		name   string
+		schema string
+	}{
+		{usersTable, usersTableSchema},
+		{userAssetsTable, userAssetsTableSchema},
+		{userTokensTable, userTokensTableSchema},
+	}
+
+	for _, table := range tables {
+		err = createTableIfNotExists(db, table.name, table.schema)
+		if err != nil {
+			log.Printf("Error creating table %s: %s\n", table.name, err)
+			return nil, err
+		}
+		log.Printf("Created Table %s\n", table.name)
+	}
+
 	return db, nil
 }

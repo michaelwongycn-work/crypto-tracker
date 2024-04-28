@@ -12,6 +12,9 @@ crypto-tracker.exe
 # ignore vendor
 **/vendor
 
+# ignore aws install script
+install.sh
+
 # ignore sqlite client & db
 **/sqlite
 crypto.db
