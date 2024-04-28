@@ -1,0 +1,17 @@
+# ignore all logs
+**/logs
+
+# ignore local config
+application_config.json
+
+# ignore bin
+**/bin
+crypto-tracker
+crypto-tracker.exe
+
+# ignore vendor
+**/vendor
+
+# ignore sqlite client & db
+**/sqlite
+crypto.db
