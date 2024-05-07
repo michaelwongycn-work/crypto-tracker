@@ -10,6 +10,7 @@ import (
 
 	"github.com/michaelwongycn/crypto-tracker/domain/model"
 	"github.com/michaelwongycn/crypto-tracker/domain/response"
+	"github.com/michaelwongycn/crypto-tracker/lib/cache"
 	"github.com/michaelwongycn/crypto-tracker/lib/log"
 )
 
@@ -39,6 +40,10 @@ func NewCryptoRESTImpl(timeout time.Duration, baseURL, assetEndpoint, ratesEndpo
 }
 
 func (r *cryptoRESTImpl) IsValidAsset(ctx context.Context, asset string) (bool, error) {
+	if cache.GetCache(asset) != nil {
+		return true, nil
+	}
+
 	resp, err := http.Get(r.baseURL + r.assetEndpoint + asset)
 	if err != nil {
 		log.PrintLogErr(ctx, errorAccessingAPIErrorMsg, err)
@@ -61,6 +66,9 @@ func (r *cryptoRESTImpl) IsValidAsset(ctx context.Context, asset string) (bool, 
 		return false, err
 	}
 
+	if APIResponse.Data.ID == asset {
+		cache.SetCache(asset, "ok")
+	}
 	return APIResponse.Data.ID == asset, nil
 }
 

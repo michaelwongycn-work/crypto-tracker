@@ -28,6 +28,7 @@ func createTableIfNotExists(db *sql.DB, tableName string, schema string) error {
 		if err != nil {
 			return err
 		}
+		log.Printf("Created Table %s\n", tableName)
 	}
 	return nil
 }
@@ -64,7 +65,6 @@ func Connect(timeout time.Duration, dbname string) (*sql.DB, error) {
 			log.Printf("Error creating table %s: %s\n", table.name, err)
 			return nil, err
 		}
-		log.Printf("Created Table %s\n", table.name)
 	}
 
 	return db, nil
